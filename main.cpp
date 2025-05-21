@@ -3,6 +3,11 @@
 
 #include <QLocale>
 #include <QTranslator>
+#include <QDateTime>
+#include <QUuid>
+#include <QDir>
+
+#include "Helper.h"
 
 int main(int argc, char *argv[])
 {
@@ -29,6 +34,14 @@ int main(int argc, char *argv[])
                 QCoreApplication::exit(-1);
         }, Qt::QueuedConnection);
     engine.load(url);
+
+    // TODO: Create this dir while installing
+
+    QDir appDataDir(Helper::appDataLocation);
+    if (!appDataDir.exists())
+    {
+        appDataDir.mkpath(Helper::appDataLocation);
+    }
 
     return app.exec();
 }
