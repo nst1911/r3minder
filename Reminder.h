@@ -17,6 +17,7 @@ class Reminder : public QObject
     Q_PROPERTY(QDateTime dateTime READ dateTime WRITE setDateTime NOTIFY dateTimeChanged)
 
 public:
+    Reminder(const QString &description, const QDateTime &dateTime, QObject *parent = nullptr);
     Reminder(const QUuid &uuid, const QString &description, const QDateTime &dateTime, QObject *parent = nullptr);
 
     QUuid uuid() const;
@@ -40,5 +41,7 @@ private:
     QString m_description;
     QDateTime m_dateTime;
 };
+
+QDebug operator<<(QDebug dbg, const Reminder *reminder);
 
 }

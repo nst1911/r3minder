@@ -1,5 +1,12 @@
+#include <QDebug>
+
 #include "Reminder.h"
 
+r3minder::Reminder::Reminder(const QString &description, const QDateTime &dateTime, QObject *parent)
+    : Reminder(QUuid::createUuid(), description, dateTime, parent)
+{
+
+}
 
 r3minder::Reminder::Reminder(const QUuid &uuid, const QString &description, const QDateTime &dateTime, QObject *parent)
     : QObject(parent), m_uuid(uuid), m_description(description), m_dateTime(dateTime)
@@ -48,4 +55,13 @@ void r3minder::Reminder::setDateTime(const QDateTime &dateTime)
 bool r3minder::Reminder::isValid() const
 {
     return !m_uuid.isNull() && !m_description.isEmpty() && m_dateTime.isValid();
+}
+
+QDebug r3minder::operator<<(QDebug dbg, const Reminder *reminder)
+{
+    dbg << QString("[uuid=%1 description=%2 dateTime=%3]")
+               .arg(reminder->uuid().toString())
+               .arg(reminder->description())
+               .arg(reminder->dateTime().toString(Qt::ISODate));
+    return dbg;
 }

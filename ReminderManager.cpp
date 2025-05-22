@@ -46,6 +46,14 @@ r3minder::ReminderManager::ReminderManager(QObject *parent)
     );
 }
 
+r3minder::ReminderManager::~ReminderManager()
+{
+    for (auto *timer : m_timers.values())
+    {
+        timer->deleteLater();
+    }
+}
+
 QList<r3minder::Reminder*> r3minder::ReminderManager::getReminders()
 {
     RETURN_IF_DB_IS_NOT_VALID({});
@@ -88,16 +96,92 @@ bool r3minder::ReminderManager::addReminder(const Reminder *reminder)
     return true;
 }
 
-bool r3minder::ReminderManager::removeReminder(const Reminder *reminder)
+bool r3minder::ReminderManager::removeReminder(const QUuid &reminderUuid)
 {
     RETURN_IF_DB_IS_NOT_VALID(false);
 
     QSqlQuery q(m_db);
     q.prepare("DELETE FROM reminders WHERE uuid=(:uuid)");
-    q.bindValue(":uuid", reminder->uuid());
+    q.bindValue(":uuid", reminderUuid);
     q.exec();
 
     RETURN_IF_SQL_QUERY_FAILED(false, "Error while removing reminder from DB")
 
     return true;
+}
+
+bool r3minder::ReminderManager::scheduleReminders()
+{
+    auto reminders = getReminders();
+    if (reminders.isEmpty())
+    {
+        qWarning() << "No reminders found";
+        return false;
+    }
+
+    for (auto *timer : m_timers.values())
+    {
+        timer->deleteLater();
+    }
+    m_timers.clear();
+
+    bool result = true;
+
+    for (const auto *reminder : reminders)
+    {
+        if (!addReminderToSchedule(reminder))
+        {
+            qWarning() << "Can't add reminder" << reminder << "to schedule";
+            result = false;
+        }
+    }
+
+    return result;
+}
+
+bool r3minder::ReminderManager::addReminderToSchedule(const Reminder *reminder)
+{
+    qint64 delayMs = QDateTime::currentDateTime().msecsTo(reminder->dateTime());
+
+    if (delayMs <= 0)
+    {
+        qWarning() << reminder << "Target time is in the past";
+        return false;
+    }
+
+    auto *timer = new QTimer(this);
+    timer->setSingleShot(true);
+    timer->setInterval(delayMs);
+
+    connect(timer, &QTimer::timeout, this, [reminder, this]() {
+        processReminder(reminder);
+    });
+
+    timer->start();
+
+    m_timers.insert(reminder->uuid(), timer);
+
+    return true;
+
+}
+
+bool r3minder::ReminderManager::removeReminderFromSchedule(const QUuid &reminderUuid)
+{
+    if (!m_timers.contains(reminderUuid))
+    {
+        qWarning() << "Can't find a reminder with uuid" << reminderUuid << "to remove from schedule";
+        return false;
+    }
+
+    auto *timer = m_timers.value(reminderUuid);
+    timer->stop();
+    timer->deleteLater();
+    m_timers.remove(reminderUuid);
+
+    return true;
+}
+
+void r3minder::ReminderManager::processReminder(const Reminder *reminder)
+{
+    qDebug() << "processReminder" << reminder;
 }
