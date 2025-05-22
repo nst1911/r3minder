@@ -26,8 +26,8 @@ protected:
     bool addReminderToSchedule(const Reminder *reminder);
     bool removeReminderFromSchedule(const QUuid &reminderUuid);
 
-private slots:
-    void processReminder(const Reminder *reminder);
+signals:
+    void reminderFired(const Reminder *reminder);
 
 private:
     QSqlDatabase m_db;

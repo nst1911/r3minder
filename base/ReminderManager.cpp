@@ -154,7 +154,8 @@ bool r3minder::ReminderManager::addReminderToSchedule(const Reminder *reminder)
     timer->setInterval(delayMs);
 
     connect(timer, &QTimer::timeout, this, [reminder, this]() {
-        processReminder(reminder);
+        qDebug() << "Reminder fired" << reminder;
+        emit reminderFired(reminder);
     });
 
     timer->start();
@@ -179,9 +180,4 @@ bool r3minder::ReminderManager::removeReminderFromSchedule(const QUuid &reminder
     m_timers.remove(reminderUuid);
 
     return true;
-}
-
-void r3minder::ReminderManager::processReminder(const Reminder *reminder)
-{
-    qDebug() << "processReminder" << reminder;
 }
