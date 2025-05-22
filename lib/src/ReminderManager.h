@@ -15,7 +15,6 @@ class ReminderManager : public QObject
 
 public:
     ReminderManager(QObject *parent = nullptr);
-    virtual ~ReminderManager();
 
     Q_INVOKABLE QList<Reminder*> getReminders();
     Q_INVOKABLE bool addReminder(Reminder *reminder);

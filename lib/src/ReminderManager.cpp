@@ -49,14 +49,6 @@ r3minder::ReminderManager::ReminderManager(QObject *parent)
     connect(this, &ReminderManager::reminderFired, this, &ReminderManager::onReminderFired);
 }
 
-r3minder::ReminderManager::~ReminderManager()
-{
-    for (auto *timer : m_timers.values())
-    {
-        timer->deleteLater();
-    }
-}
-
 QList<r3minder::Reminder*> r3minder::ReminderManager::getReminders()
 {
     RETURN_IF_DB_IS_NOT_VALID({});
