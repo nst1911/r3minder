@@ -17,9 +17,7 @@ int main(int argc, char *argv[])
 
     r3minder::ReminderManager rm;
 
-    rm.addReminder(new r3minder::Reminder("test123", QDateTime::currentDateTime().addSecs(30)));
-
-    rm.scheduleReminders();
+    rm.addReminder(new r3minder::Reminder("test1", QDateTime::currentDateTime().addSecs(10), 10));
 
     return a.exec();
 }

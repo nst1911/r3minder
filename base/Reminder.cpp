@@ -2,14 +2,14 @@
 
 #include "Reminder.h"
 
-r3minder::Reminder::Reminder(const QString &description, const QDateTime &dateTime, QObject *parent)
-    : Reminder(QUuid::createUuid(), description, dateTime, parent)
+r3minder::Reminder::Reminder(const QString &description, const QDateTime &dateTime, int repeatEverySecs, QObject *parent)
+    : Reminder(QUuid::createUuid(), description, dateTime, repeatEverySecs, parent)
 {
 
 }
 
-r3minder::Reminder::Reminder(const QUuid &uuid, const QString &description, const QDateTime &dateTime, QObject *parent)
-    : QObject(parent), m_uuid(uuid), m_description(description), m_dateTime(dateTime)
+r3minder::Reminder::Reminder(const QUuid &uuid, const QString &description, const QDateTime &dateTime, int repeatEverySecs, QObject *parent)
+    : QObject(parent), m_uuid(uuid), m_description(description), m_dateTime(dateTime), m_repeatEverySecs(repeatEverySecs)
 {
 
 }
@@ -49,6 +49,20 @@ void r3minder::Reminder::setDateTime(const QDateTime &dateTime)
     {
         m_dateTime = dateTime;
         emit dateTimeChanged();
+    }
+}
+
+int r3minder::Reminder::repeatEverySecs() const
+{
+    return m_repeatEverySecs;
+}
+
+void r3minder::Reminder::setRepeatEverySecs(int repeatEverySecs)
+{
+    if (repeatEverySecs != m_repeatEverySecs)
+    {
+        m_repeatEverySecs = repeatEverySecs;
+        emit repeatEverySecsChanged();
     }
 }
 

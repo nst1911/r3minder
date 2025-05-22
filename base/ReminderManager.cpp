@@ -42,8 +42,11 @@ r3minder::ReminderManager::ReminderManager(QObject *parent)
         "CREATE TABLE reminders("
         "uuid TEXT UNIQUE,"
         "description TEXT,"
-        "dateTime TEXT)"
+        "dateTime TEXT,"
+        "repeatEverySecs INT)"
     );
+
+    connect(this, &ReminderManager::reminderFired, this, &ReminderManager::onReminderFired);
 }
 
 r3minder::ReminderManager::~ReminderManager()
@@ -69,31 +72,33 @@ QList<r3minder::Reminder*> r3minder::ReminderManager::getReminders()
         QUuid uuid = q.value(0).toUuid();
         QString description = q.value(1).toString();
         QDateTime dateTime = q.value(2).toDateTime();
-        reminders.append(new Reminder(uuid, description, dateTime, this));
+        qint64 repeatEverySecs = q.value(3).toInt();
+        reminders.append(new Reminder(uuid, description, dateTime, repeatEverySecs, this));
     }
 
     return reminders;
 }
 
-bool r3minder::ReminderManager::addReminder(const Reminder *reminder)
+bool r3minder::ReminderManager::addReminder(Reminder *reminder)
 {
     RETURN_IF_DB_IS_NOT_VALID(false);
 
     QSqlQuery q(m_db);
     q.prepare(
         "INSERT OR REPLACE INTO reminders"
-        "(uuid, description, dateTime)"
+        "(uuid, description, dateTime, repeatEverySecs)"
         "VALUES"
-        "(:uuid, :description, :dateTime)"
+        "(:uuid, :description, :dateTime, :repeatEverySecs)"
     );
     q.bindValue(":uuid", reminder->uuid());
     q.bindValue(":description", reminder->description());
     q.bindValue(":dateTime", reminder->dateTime());
+    q.bindValue(":repeatEverySecs", reminder->repeatEverySecs());
     q.exec();
 
     RETURN_IF_SQL_QUERY_FAILED(false, "Error while adding reminder to DB")
 
-    return true;
+    return addReminderToSchedule(reminder);
 }
 
 bool r3minder::ReminderManager::removeReminder(const QUuid &reminderUuid)
@@ -107,7 +112,7 @@ bool r3minder::ReminderManager::removeReminder(const QUuid &reminderUuid)
 
     RETURN_IF_SQL_QUERY_FAILED(false, "Error while removing reminder from DB")
 
-    return true;
+    return removeReminderFromSchedule(reminderUuid);
 }
 
 bool r3minder::ReminderManager::scheduleReminders()
@@ -127,7 +132,7 @@ bool r3minder::ReminderManager::scheduleReminders()
 
     bool result = true;
 
-    for (const auto *reminder : reminders)
+    for (auto *reminder : reminders)
     {
         if (!addReminderToSchedule(reminder))
         {
@@ -139,13 +144,13 @@ bool r3minder::ReminderManager::scheduleReminders()
     return result;
 }
 
-bool r3minder::ReminderManager::addReminderToSchedule(const Reminder *reminder)
+bool r3minder::ReminderManager::addReminderToSchedule(Reminder *reminder)
 {
     qint64 delayMs = QDateTime::currentDateTime().msecsTo(reminder->dateTime());
 
     if (delayMs <= 0)
     {
-        qWarning() << reminder << "Target time is in the past";
+        qWarning() << "Target time is in the past reminder:" << reminder;
         return false;
     }
 
@@ -154,7 +159,7 @@ bool r3minder::ReminderManager::addReminderToSchedule(const Reminder *reminder)
     timer->setInterval(delayMs);
 
     connect(timer, &QTimer::timeout, this, [reminder, this]() {
-        qDebug() << "Reminder fired" << reminder;
+        qDebug() << "Reminder fired:" << reminder;
         emit reminderFired(reminder);
     });
 
@@ -180,4 +185,19 @@ bool r3minder::ReminderManager::removeReminderFromSchedule(const QUuid &reminder
     m_timers.remove(reminderUuid);
 
     return true;
+}
+
+void r3minder::ReminderManager::onReminderFired(Reminder *reminder)
+{
+    removeReminder(reminder->uuid());
+
+    if (reminder->repeatEverySecs() > 0)
+    {
+        auto nextReminder = new Reminder(
+            reminder->description(),
+            QDateTime::currentDateTime().addSecs(reminder->repeatEverySecs()),
+            reminder->repeatEverySecs()
+        );
+        addReminder(nextReminder);
+    }
 }
