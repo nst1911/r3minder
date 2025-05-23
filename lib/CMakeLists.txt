@@ -17,7 +17,7 @@ add_library(${target_name} STATIC)
 
 target_sources(${target_name}
     PRIVATE
-    src/Helper.h
+    src/Common.h
     src/Reminder.cpp
     src/Reminder.h
     src/ReminderManager.cpp
