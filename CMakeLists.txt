@@ -8,3 +8,4 @@ set(CMAKE_AUTORCC ON)
 
 add_subdirectory(lib)
 add_subdirectory(tests)
+add_subdirectory(linux/service)
