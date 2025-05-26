@@ -14,7 +14,11 @@ class ReminderManager : public QObject
     Q_OBJECT
 
 public:
-    ReminderManager(QObject *parent = nullptr);
+    static ReminderManager* instance()
+    {
+        static ReminderManager* instance = new ReminderManager;
+        return instance;
+    }
 
     Q_INVOKABLE QList<Reminder> getReminders();
     Q_INVOKABLE bool addReminder(const Reminder &reminder);
@@ -32,6 +36,8 @@ signals:
     void reminderFired(const Reminder &reminder);
 
 private:
+    ReminderManager(QObject *parent = nullptr);
+
     QSqlDatabase m_db;
     QMap<QUuid, QTimer*> m_timers;
 };

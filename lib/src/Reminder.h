@@ -21,3 +21,5 @@ struct Reminder
 QDebug operator<<(QDebug dbg, const Reminder &reminder);
 
 }
+
+Q_DECLARE_METATYPE(r3minder::Reminder)
