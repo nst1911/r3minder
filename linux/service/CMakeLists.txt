@@ -9,16 +9,32 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(TARGET_NAME r3minder)
+
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core DBus)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core DBus)
 
-add_executable(service
+#qt5_add_dbus_adaptor(
+#    GENERATED_SOURCES
+#    com.github.r3minder.api.xml
+#    ReminderManager.h
+#    r3minder::ReminderManager
+#    ReminderManagerDBusAdaptor
+#    ReminderManagerDBusAdaptor
+#)
+
+add_executable(${TARGET_NAME}
+#  ${GENERATED_SOURCES}
   main.cpp
+  ReminderManagerDBusAdaptor.h
+  ReminderManagerDBusAdaptor.cpp
 )
-target_link_libraries(service Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::DBus lib)
+target_link_libraries(${TARGET_NAME} Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::DBus lib)
 
 include(GNUInstallDirs)
-install(TARGETS service
+install(TARGETS ${TARGET_NAME}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+
