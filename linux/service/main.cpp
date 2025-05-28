@@ -1,11 +1,17 @@
 #include <QCoreApplication>
-#include <QDir>
 #include <QDebug>
+#include <QDir>
+#include <QProcess>
 
 #include "Common.h"
 #include "ReminderManagerDBusAdaptor.h"
 
 using namespace r3minder;
+
+int sendDesktopNotification(const QString &description)
+{
+    return QProcess::execute("notify-send", { description });
+}
 
 int main(int argc, char *argv[])
 {
@@ -22,16 +28,17 @@ int main(int argc, char *argv[])
         }
     }
 
-    qDebug() << QFile::remove(r3minder::Common::appDataLocation + "/r3minder.db");
-
-    // DBus registration
-
-    new ReminderManagerDBusAdaptor(ReminderManager::instance());
-
-    QDBusConnection connection = QDBusConnection::sessionBus();
+    auto adaptor = new ReminderManagerDBusAdaptor(ReminderManager::instance());
+    QObject::connect(adaptor, &ReminderManagerDBusAdaptor::reminderFired, adaptor, [](const QString& str) {
+        auto description = Reminder::fromJson(str).description;
+        sendDesktopNotification(description.isEmpty()
+                                    ? "r3minder: Empty notification"
+                                    : "r3minder: " + description);
+    });
 
     static const QString serviceName = "com.github.r3minder";
 
+    QDBusConnection connection = QDBusConnection::sessionBus();
     if (!connection.interface()->isServiceRegistered(serviceName))
     {
         if (!connection.registerService(serviceName))
@@ -48,9 +55,7 @@ int main(int argc, char *argv[])
         qDebug() << "DBus service is already registered";
     }
 
-
-
-//    r3minder::ReminderManager::instance()->scheduleReminders();
+    r3minder::ReminderManager::instance()->scheduleReminders();
 
     return a.exec();
 }
