@@ -10,7 +10,6 @@ namespace Common
 {
 
 const QString appDataLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/r3minder";
-const QString dbusServiceName = "com.github.r3minder";
 
 }
 

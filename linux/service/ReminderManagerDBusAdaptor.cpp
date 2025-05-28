@@ -10,29 +10,37 @@
 r3minder::ReminderManagerDBusAdaptor::ReminderManagerDBusAdaptor(ReminderManager *mngr)
     : QDBusAbstractAdaptor(mngr), m_mngr(mngr)
 {
-    connect(m_mngr, &ReminderManager::reminderFired, this, [this](const Reminder &r) {
-        emit reminderFired(QDBusVariant(QVariant::fromValue(r)));
+    connect(m_mngr, &ReminderManager::reminderFired, this, [this](const Reminder &reminder) {
+        emit reminderFired(Reminder::toJson(reminder));
     });
 }
 
-bool r3minder::ReminderManagerDBusAdaptor::addReminder(const QDBusVariant &reminder)
+bool r3minder::ReminderManagerDBusAdaptor::addReminder(const QString &dateTime, int repeatEverySecs, const QString &description)
 {
-    return m_mngr->addReminder(reminder.variant().value<Reminder>());
+    qDebug() << "addReminder with args" << dateTime << repeatEverySecs << description << "called via DBus";
+    return m_mngr->addReminder(Reminder(QDateTime::fromString(dateTime, Qt::ISODate), repeatEverySecs, description));
 }
 
-QDBusVariant r3minder::ReminderManagerDBusAdaptor::getReminders()
+QStringList r3minder::ReminderManagerDBusAdaptor::getReminders()
 {
-    auto reminders = m_mngr->getReminders();
-    return QDBusVariant(QVariant::fromValue(reminders));
+    qDebug() << "getReminders called via DBus";
+
+    QStringList strList;
+    for (const auto &reminder : m_mngr->getReminders())
+    {
+        strList.append(Reminder::toJson(reminder));
+    }
+    return strList;
 }
 
 bool r3minder::ReminderManagerDBusAdaptor::removeReminder(const QString &uuid)
 {
+    qDebug() << "removeReminder with arg" << uuid << "called via DBus";
     return m_mngr->removeReminder(QUuid(uuid));
 }
 
 bool r3minder::ReminderManagerDBusAdaptor::scheduleReminders()
 {
+    qDebug() << "scheduleReminders called via DBus";
     return m_mngr->scheduleReminders();
 }
-

@@ -16,7 +16,7 @@ class ReminderManager : public QObject
 public:
     static ReminderManager* instance()
     {
-        static ReminderManager* instance = new ReminderManager;
+        static auto *instance = new ReminderManager;
         return instance;
     }
 

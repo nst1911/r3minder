@@ -14,17 +14,7 @@ set(TARGET_NAME r3minder)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core DBus)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core DBus)
 
-#qt5_add_dbus_adaptor(
-#    GENERATED_SOURCES
-#    com.github.r3minder.api.xml
-#    ReminderManager.h
-#    r3minder::ReminderManager
-#    ReminderManagerDBusAdaptor
-#    ReminderManagerDBusAdaptor
-#)
-
 add_executable(${TARGET_NAME}
-#  ${GENERATED_SOURCES}
   main.cpp
   ReminderManagerDBusAdaptor.h
   ReminderManagerDBusAdaptor.cpp

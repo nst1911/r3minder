@@ -41,8 +41,8 @@ r3minder::ReminderManager::ReminderManager(QObject *parent)
     m_db.exec(
         "CREATE TABLE reminders("
         "uuid TEXT UNIQUE,"
-        "description TEXT,"
         "dateTime TEXT,"
+        "description TEXT,"
         "repeatEverySecs INT)"
     );
 
@@ -61,11 +61,12 @@ QList<r3minder::Reminder> r3minder::ReminderManager::getReminders()
     QList<Reminder> reminders;
     while (q.next())
     {
-        QUuid uuid = q.value(0).toUuid();
-        QString description = q.value(1).toString();
-        QDateTime dateTime = q.value(2).toDateTime();
-        int repeatEverySecs = q.value(3).toInt();
-        reminders.append({uuid, description, dateTime, repeatEverySecs});
+        reminders.append(Reminder(
+            q.value(1).toDateTime(),
+            q.value(3).toInt(),
+            q.value(2).toString(),
+            q.value(0).toString()
+        ));
     }
 
     return reminders;
@@ -78,14 +79,14 @@ bool r3minder::ReminderManager::addReminder(const Reminder &reminder)
     QSqlQuery q(m_db);
     q.prepare(
         "INSERT OR REPLACE INTO reminders"
-        "(uuid, description, dateTime, repeatEverySecs)"
+        "(uuid, dateTime, repeatEverySecs, description)"
         "VALUES"
-        "(:uuid, :description, :dateTime, :repeatEverySecs)"
+        "(:uuid, :dateTime, :repeatEverySecs, :description)"
     );
     q.bindValue(":uuid", reminder.uuid);
-    q.bindValue(":description", reminder.description);
     q.bindValue(":dateTime", reminder.dateTime);
     q.bindValue(":repeatEverySecs", reminder.repeatEverySecs);
+    q.bindValue(":description", reminder.description);
     q.exec();
 
     RETURN_IF_SQL_QUERY_FAILED(false, "Error while adding reminder to DB")
@@ -141,14 +142,14 @@ bool r3minder::ReminderManager::addReminderToSchedule(const Reminder &reminder)
     // timer is already activated
     if (m_timers.contains(reminder.uuid))
     {
+        qDebug() << "timer for" << reminder << "is already activated";
         return true;
     }
 
     qint64 delayMs = QDateTime::currentDateTime().msecsTo(reminder.dateTime);
-
     if (delayMs <= 0)
     {
-        qWarning() << "Target time is in the past reminder:" << reminder;
+        qWarning() << "Target time is in the past" << reminder;
         return false;
     }
 
@@ -192,11 +193,10 @@ void r3minder::ReminderManager::onReminderFired(const Reminder &reminder)
 
     if (reminder.repeatEverySecs > 0)
     {
-        addReminder({
-            QUuid::createUuid(),
-            reminder.description,
+        addReminder(Reminder(
             QDateTime::currentDateTime().addSecs(reminder.repeatEverySecs),
-            reminder.repeatEverySecs
-        });
+            reminder.repeatEverySecs,
+            reminder.description
+        ));
     }
 }

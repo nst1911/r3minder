@@ -4,18 +4,25 @@
 #include <QString>
 #include <QDateTime>
 #include <QUuid>
+#include <QDBusArgument>
 
 namespace r3minder
 {
 
 struct Reminder
 {
+    Reminder() = default;
+    Reminder(const QDateTime &dateTime, int repeatEverySecs = 0, const QString &description = QString(),  const QUuid &uuid = {});
+
     QUuid uuid;
-    QString description;
     QDateTime dateTime;
+    QString description;
     int repeatEverySecs = 0;
 
     bool isValid() const;
+
+    static QString toJson(const Reminder &reminder);
+    static Reminder fromJson(const QString &str);
 };
 
 QDebug operator<<(QDebug dbg, const Reminder &reminder);
