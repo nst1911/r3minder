@@ -147,10 +147,11 @@ bool r3minder::ReminderManager::addReminderToSchedule(const Reminder &reminder)
     }
 
     qint64 delayMs = QDateTime::currentDateTime().msecsTo(reminder.dateTime);
+    // target time is in past. fire a reminder right now.
     if (delayMs <= 0)
     {
-        qWarning() << "Target time is in the past" << reminder;
-        return false;
+        emit reminderFired(reminder);
+        return true;
     }
 
     auto *timer = new QTimer(this);
@@ -174,7 +175,7 @@ bool r3minder::ReminderManager::removeReminderFromSchedule(const QUuid &reminder
 {
     if (!m_timers.contains(reminderUuid))
     {
-        qWarning() << "Can't find a reminder with uuid" << reminderUuid << "to remove from schedule";
+        qWarning() << "There's no" << reminderUuid << "in schedule";
         return false;
     }
 
