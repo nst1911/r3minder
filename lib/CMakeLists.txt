@@ -17,16 +17,16 @@ add_library(${target_name} STATIC)
 
 target_sources(${target_name}
     PRIVATE
-    src/Common.h
-    src/Reminder.cpp
-    src/Reminder.h
-    src/ReminderManager.cpp
-    src/ReminderManager.h
+    Common.h
+    Reminder.cpp
+    Reminder.h
+    ReminderManager.cpp
+    ReminderManager.h
 )
 
 target_include_directories(${target_name}
     PUBLIC
-    ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_SOURCE_DIR}
 )
 
 target_link_libraries(${target_name}
