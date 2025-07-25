@@ -10,8 +10,16 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Sql DBus)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Sql DBus)
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(DBUS_PACKAGE DBus)
+    set(DBUS_LIBRARY Qt${QT_VERSION_MAJOR}::DBus)
+else()
+    set(DBUS_PACKAGE "")
+    set(DBUS_LIBRARY "")
+endif()
+
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Sql ${DBUS_PACKAGE})
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Sql ${DBUS_PACKAGE})
 
 add_library(${target_name} STATIC)
 
@@ -32,8 +40,7 @@ target_include_directories(${target_name}
 target_link_libraries(${target_name}
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Sql
-    Qt${QT_VERSION_MAJOR}::DBus
-
+    ${DBUS_LIBRARY}
 )
 
 include(GNUInstallDirs)

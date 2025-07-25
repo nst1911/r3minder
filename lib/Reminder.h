@@ -4,7 +4,6 @@
 #include <QString>
 #include <QDateTime>
 #include <QUuid>
-#include <QDBusArgument>
 
 namespace r3minder
 {

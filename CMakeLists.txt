@@ -8,4 +8,9 @@ set(CMAKE_AUTORCC ON)
 
 add_subdirectory(lib)
 add_subdirectory(tests)
-add_subdirectory(linux/service)
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_subdirectory(linux/service)
+else()
+    add_subdirectory(android)
+endif()
