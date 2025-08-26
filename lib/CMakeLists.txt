@@ -13,7 +13,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Sql DBus)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Sql DBus)
 
-add_library(${target_name} STATIC)
+add_library(${target_name} STATIC
+    Common.cpp)
 
 target_sources(${target_name}
     PRIVATE

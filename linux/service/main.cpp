@@ -18,12 +18,12 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
     // TODO: Create this dir while installing
-    QDir appDataDir(Common::appDataLocation);
+    QDir appDataDir(Common::getAppDataLocation());
     if (!appDataDir.exists())
     {
         if (appDataDir.mkdir("."))
         {
-            qCritical() << "Failed when creating directory" << Common::appDataLocation;
+            qCritical() << "Failed when creating directory" << appDataDir;
             return 1;
         }
     }

@@ -45,6 +45,14 @@ r3minder::Reminder r3minder::Reminder::fromJson(const QString &str)
     );
 }
 
+bool r3minder::operator==(const r3minder::Reminder& r1, const r3minder::Reminder& r2)
+{
+    return r1.dateTime == r2.dateTime &&
+           r1.description == r2.description &&
+           r1.repeatEverySecs == r2.repeatEverySecs &&
+           r1.uuid == r2.uuid;
+}
+
 QDebug r3minder::operator<<(QDebug dbg, const Reminder &reminder)
 {
     dbg << "{" << reminder.uuid << reminder.dateTime << reminder.repeatEverySecs << reminder.description << "}";

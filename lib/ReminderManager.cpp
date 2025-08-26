@@ -30,7 +30,7 @@ r3minder::ReminderManager::ReminderManager(QObject *parent)
     : QObject(parent)
 {
     m_db = QSqlDatabase::addDatabase("QSQLITE");
-    m_db.setDatabaseName(Common::appDataLocation + "/" + c_dbFileName);
+    m_db.setDatabaseName(Common::getAppDataLocation() + "/" + c_dbFileName);
 
     if (!m_db.open())
     {

@@ -23,8 +23,11 @@ struct Reminder
 
     static QString toJson(const Reminder &reminder);
     static Reminder fromJson(const QString &str);
+
+    friend bool operator==(const Reminder& r1, const Reminder& r2);
 };
 
+bool operator==(const Reminder& r1, const Reminder& r2);
 QDebug operator<<(QDebug dbg, const Reminder &reminder);
 
 }
