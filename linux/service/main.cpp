@@ -2,6 +2,7 @@
 #include <QDebug>
 #include <QDir>
 #include <QProcess>
+#include <QDBusMessage>
 
 #include "Common.h"
 #include "ReminderManagerDBusAdaptor.h"
@@ -10,7 +11,29 @@ using namespace r3minder;
 
 int sendDesktopNotification(const QString &description)
 {
-    return QProcess::execute("notify-send", { description });
+    QDBusMessage message = QDBusMessage::createMethodCall(
+        "org.freedesktop.Notifications",
+        "/org/freedesktop/Notifications",
+        "org.freedesktop.Notifications",
+        "Notify"
+    );
+
+    message << "r3minder"    // app_name
+            << uint(0)       // replaces_id
+            << ""            // app_icon
+            << "Reminder"    // summary
+            << description   // body
+            << QStringList{} // actions
+            << QVariantMap{} // hints
+            << 30 * 1000;    // expire_timeout
+
+    QDBusReply<uint> reply = QDBusConnection::sessionBus().call(message);
+    if (!reply.isValid())
+    {
+        qDebug() << "Error:" << reply.error().message();
+    }
+
+    return reply.value();
 }
 
 int main(int argc, char *argv[])
