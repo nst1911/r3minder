@@ -18,6 +18,8 @@ add_executable(${TARGET_NAME}
   main.cpp
   ReminderManagerDBusAdaptor.h
   ReminderManagerDBusAdaptor.cpp
+  NotificationManager.h
+  NotificationManager.cpp
 )
 target_link_libraries(${TARGET_NAME} Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::DBus lib)
 

@@ -9,7 +9,7 @@ QString r3minder::Common::getAppDataLocation()
 
     if (appDataLocation.isEmpty())
     {
-        appDataLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/r3minder";
+        appDataLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     }
     else
     {
