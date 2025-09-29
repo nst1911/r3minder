@@ -72,6 +72,18 @@ QList<r3minder::Reminder> r3minder::ReminderManager::getReminders()
     return reminders;
 }
 
+r3minder::Reminder r3minder::ReminderManager::getReminder(const QUuid &reminderUuid)
+{
+    for (const auto &reminder : getReminders())
+    {
+        if (reminder.uuid == reminderUuid)
+        {
+            return reminder;
+        }
+    }
+    return {};
+}
+
 bool r3minder::ReminderManager::addReminder(const Reminder &reminder)
 {
     RETURN_IF_DB_IS_NOT_VALID(false);
@@ -106,6 +118,32 @@ bool r3minder::ReminderManager::removeReminder(const QUuid &reminderUuid)
     RETURN_IF_SQL_QUERY_FAILED(false, "Error while removing reminder from DB")
 
     return removeReminderFromSchedule(reminderUuid);
+}
+
+bool r3minder::ReminderManager::removeReminders()
+{
+    RETURN_IF_DB_IS_NOT_VALID(false);
+
+    QSqlQuery q(m_db);
+    q.prepare("DELETE FROM reminders");
+    q.exec();
+
+    RETURN_IF_SQL_QUERY_FAILED(false, "Error while removing reminders from DB")
+
+    clearSchedule();
+
+    return true;
+}
+
+bool r3minder::ReminderManager::snoozeReminder(const QUuid &reminderUuid, const quint64 snoozeTimeSec)
+{
+    Reminder reminder = getReminder(reminderUuid);
+    if (!reminder.isValid())
+    {
+        return false;
+    }
+    reminder.dateTime = QDateTime::currentDateTime().addSecs(snoozeTimeSec);
+    return ReminderManager::instance()->addReminder(reminder);
 }
 
 bool r3minder::ReminderManager::scheduleReminders()
@@ -186,6 +224,16 @@ bool r3minder::ReminderManager::removeReminderFromSchedule(const QUuid &reminder
     m_timers.remove(reminderUuid);
 
     return true;
+}
+
+bool r3minder::ReminderManager::clearSchedule()
+{
+    for (auto *timer : m_timers)
+    {
+        timer->stop();
+        timer->deleteLater();
+    }
+    m_timers.clear();
 }
 
 void r3minder::ReminderManager::onReminderFired(const Reminder &reminder)

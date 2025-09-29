@@ -53,13 +53,6 @@ quint32 r3minder::NotificationManager::sendNotification(const Reminder &reminder
 
 void r3minder::NotificationManager::onActionInvoked(quint32 id, const QString &actionKey)
 {
-    auto snoozeReminder = [](const Reminder &reminder, qint64 snoozeAddSecs) {
-        Reminder newReminder = reminder;
-        newReminder.uuid = QUuid::createUuid();
-        newReminder.dateTime = QDateTime::currentDateTime().addSecs(snoozeAddSecs);
-        return ReminderManager::instance()->addReminder(newReminder);
-    };
-
     Reminder reminder = sm_reminderMap[id];
     if (!reminder.isValid())
     {
@@ -71,15 +64,22 @@ void r3minder::NotificationManager::onActionInvoked(quint32 id, const QString &a
 
     if (actionKey == "1")
     {
-        result = snoozeReminder(reminder, 3);
+        result = ReminderManager::instance()->snoozeReminder(reminder.uuid, 15 * 60);
     }
     else if (actionKey == "2")
     {
-        result = snoozeReminder(reminder, 5);
+        result = ReminderManager::instance()->snoozeReminder(reminder.uuid, 60 * 60);
     }
     else
     {
-        qDebug() << "Invalid action key";
+        qDebug() << "Invalid action key" << actionKey;
+        return;
+    }
+
+    if (!result)
+    {
+        qDebug() << "Error while snoozing reminder";
+        return;
     }
 
     sm_reminderMap.remove(id);
